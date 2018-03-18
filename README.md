@@ -39,7 +39,7 @@ You're reading it!
 
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-The code for this step is contained in the second code cell of the IPython notebook.  
+The code for this step is contained in the second code cell of the IPython notebook `CarND-Vehicle-Detection.ipynb`.  
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
@@ -70,6 +70,8 @@ Even in YUV, I observed that U and V channels didn't actually have a lot of usef
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
+Code cell 5 to 8 `CarND-Vehicle-Detection.ipynb`.
+
 Initially, I trained a LinearSVM classifier which was quick to train and predict but only gave an accuracy of 97%. Now since each frame has 304 windows a 97% accuracy would mean about 9 wrong predictions per frame. I could use thresholding and average over past frames to get rid of false positives.
 
 I tried `Sklearn.svm.SVC` with `rbf` kernel and default `C`. This classifier had an accuracy of 99.5 % which although is much better than LinearSVM but takes 3 times the time to train and is about 100 times slower in prediction. If I was to work on a live video feed I'd use LinearSVM for its speed but for detecting vehicles, in a video file, I prefer accuracy over speed. So, I stuck with SVC.       
@@ -77,6 +79,8 @@ I tried `Sklearn.svm.SVC` with `rbf` kernel and default `C`. This classifier had
 ### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
+
+Code cell 10 with function `find_cars()` in `CarND-Vehicle-Detection.ipynb`.
 
 For sliding window, I chose to ignore the top half of the frames which is mostly sky and tree. I also removed the left half from the frame because I was interested in detecting the cars on the same road which is on the right.
 
@@ -100,6 +104,8 @@ Here's a [link to my video result](./project_video_processed.mp4)
 
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
+
+Code cell 12 in `CarND-Vehicle-Detection.ipynb`.
 
 I recorded the positions of positive detections in each frame of the video.  From the positive detections, I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected provided the blob is wider than 20px to remove any noise that might have slipped through the threshold.  
 
