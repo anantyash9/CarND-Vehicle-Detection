@@ -9,14 +9,21 @@ The goals/steps of this project are the following:
 * Estimate a bounding box for vehicles detected.
 
 [//]: # (Image References)
-[image1]: ./examples/car_not_car.png
-[image2]: ./examples/HOG_example.jpg
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
-[image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
-[video1]: ./project_video.mp4
+[image1]: ./examples/output_8_0.png
+[image2]: ./examples/output_8_1.png
+[image3]: ./examples/output_8_2.png
+[image4]: ./examples/output_22_1.png
+[image5]: ./examples/output_28_0.png
+[image6]: ./examples/output_28_1.png
+[image7]: ./examples/output_28_2.png
+[image8]: ./examples/output_28_3.png
+[image9]: ./examples/output_28_4.png
+[image10]: ./examples/output_28_5.png
+[image11]: ./examples/1.png
+[image12]: ./examples/10.png
+[image13]: ./examples/image24.png
+[image14]: ./examples/image25.png
+[video1]: ./project_video_processed.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -36,18 +43,30 @@ The code for this step is contained in the second code cell of the IPython noteb
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
-![alt text][image1]
+Vehicle
+
+![alt text][image11]  ![alt text][image12]
+
+Non-Vehicle
+
+![alt text][image13]  ![alt text][image14]
 
 I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
 Here is an example using the `YUV` color space and HOG parameters of `orientations=9`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
+![alt text][image1]
 
 ![alt text][image2]
 
+![alt text][image3]
+
+
 #### 2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and color spaces. Visualizing the hog features gave me a good idea about the information in each channel. I trained the classifier with hog features derived from several different color spaces and comparing them I found YUV to have the best accuracy. Even in YUV, I observed that U and V channels didn't actually have a lot of useful information so I used only the Y channel from YUV. The pixels per cell parameter is set to 8 and cells per block is set to 2. I left these parameters the same as used in audacity exercise since changing any of them either reduced the accuracy of the model or didn't have any significant effect.    
+I tried various combinations of parameters and color spaces. Visualizing the hog features gave me a good idea about the information in each channel. I trained the classifier with hog features derived from several different color spaces and comparing them I found YUV to have the best accuracy. 
+
+Even in YUV, I observed that U and V channels didn't actually have a lot of useful information so I used only the Y channel from YUV. The pixels per cell parameter is set to 8 and cells per block is set to 2. I left these parameters the same as used in audacity exercise since changing any of them either reduced the accuracy of the model or didn't have any significant effect.    
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
@@ -68,7 +87,7 @@ Overlap is set to 2 cells. This strikes the perfect balance between getting too 
 Here is a visualization with all the windows displayed.
 
 
-![alt text][image3]
+![alt text][image4]
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
@@ -77,7 +96,7 @@ Ultimately I searched on three scales (1,2,3) using Y channel HOG features ( fro
 ### Video Implementation
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_processed.mp4)
 
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
@@ -87,6 +106,17 @@ I recorded the positions of positive detections in each frame of the video.  Fro
 Here's a visualization of the initial detection, Heatmap and the final output of the pipeline when running on test images.
 
 
+![alt text][image5]
+
+![alt text][image6]
+
+![alt text][image7]
+
+![alt text][image8]
+
+![alt text][image9]
+
+![alt text][image10]
 
 ---
 
@@ -94,8 +124,8 @@ Here's a visualization of the initial detection, Heatmap and the final output of
 
 #### 1. Briefly discuss any problems/issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-I  have used SVC with 'rbf' kernel for classifying each window which is very slow and would not be suitable for a real-time system. The pipeline only processes every 8th frame to make it faster but that also makes the system less responsive to sudden changes in vehicle positions.
+* I  have used SVC with 'rbf' kernel for classifying each window which is very slow and would not be suitable for a real-time system. The pipeline only processes every 8th frame to make it faster but that also makes the system less responsive to sudden changes in vehicle positions.
 
-One way to improve the project would be to use a dynamic thresholding heatmap. I have used a threshold of 3 which is good for most frames but a dynamic threshold which changes according to the number of windows detected would be a big improvement.
+* One way to improve the project would be to use a dynamic thresholding heatmap. I have used a threshold of 3 which is good for most frames but a dynamic threshold which changes according to the number of windows detected would be a big improvement.
 
-I chose to ignore the left part of the frame which again is very specific to the project video and would need to be removed if I want to use the pipeline for other videos.
+* I chose to ignore the left part of the frame which again is very specific to the project video and would need to be removed if I want to use the pipeline for other videos.
