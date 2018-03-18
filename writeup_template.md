@@ -1,6 +1,6 @@
 # **Vehicle Detection Project**
 
-The goals / steps of this project are the following:
+The goals/steps of this project are the following:
 
 * Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier.
 * Apply a color transform and append binned color features, as well as histograms of color, to the HOG feature vector. 
@@ -32,7 +32,7 @@ You're reading it!
 
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+The code for this step is contained in the second code cell of the IPython notebook.  
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
@@ -47,26 +47,32 @@ Here is an example using the `YUV` color space and HOG parameters of `orientatio
 
 #### 2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and color spaces. Visualizing the hog features gave me a good idea about the information in each channel. I trained the classifire with hog features derived from several different color spaces and comparing them i found YUV to have the best accuracy. Even in YUV I observed that U and V channels didn't actuall have a lot of usefull information so I used only the Y channel from YUV. The pixels per cell parameter is 8 and cells per block is 2. I left these parameters the same as used in udacity exercise since changing any of them either recuced the accuracy of the model or didn't have any signifecent effect.    
+I tried various combinations of parameters and color spaces. Visualizing the hog features gave me a good idea about the information in each channel. I trained the classifier with hog features derived from several different color spaces and comparing them I found YUV to have the best accuracy. Even in YUV, I observed that U and V channels didn't actually have a lot of useful information so I used only the Y channel from YUV. The pixels per cell parameter is set to 8 and cells per block is set to 2. I left these parameters the same as used in audacity exercise since changing any of them either reduced the accuracy of the model or didn't have any significant effect.    
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using...
+Initially, I trained a LinearSVM classifier which was quick to train and predict but only gave an accuracy of 97%. Now since each frame has 304 windows a 97% accuracy would mean about 9 wrong predictions per frame. I could use thresholding and average over past frames to get rid of false positives.
+
+I tried `Sklearn.svm.SVC` with `rbf` kernel and default `C`. This classifier had an accuracy of 99.5 % which although is much better than LinearSVM but takes 3 times the time to train and is about 100 times slower in prediction. If I was to work on a live video feed I'd use LinearSVM for its speed but for detecting vehicles, in a video file, I prefer accuracy over speed. So, I stuck with SVC.       
 
 ### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+For sliding window, I chose to ignore the top half of the frames which is mostly sky and tree. I also removed the left half from the frame because I was interested in detecting the cars on the same road which is on the right.
+
+I decided to use scales from 1 - 3 because this range is able to capture the farthest and closest vehicles in the video. 
+
+Overlap is set to 2 cells. This strikes the perfect balance between getting too many windows (which slows down the processing) and getting to so few that it's difficult to filter out noise. 
+
+Here is a visualization with all the windows displayed.
+
 
 ![alt text][image3]
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
-
-![alt text][image4]
----
+Ultimately I searched on three scales (1,2,3) using Y channel HOG features ( from YUV color space ) plus spatially binned color and histograms of color in the feature vector, which provided a nice result.
 
 ### Video Implementation
 
@@ -76,19 +82,9 @@ Here's a [link to my video result](./project_video.mp4)
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+I recorded the positions of positive detections in each frame of the video.  From the positive detections, I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected provided the blob is wider than 20px to remove any noise that might have slipped through the threshold.  
 
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
-
-### Here are six frames and their corresponding heatmaps:
-
-![alt text][image5]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
+Here's a visualization of the initial detection, Heatmap and the final output of the pipeline when running on test images.
 
 
 
@@ -96,8 +92,10 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ### Discussion
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### 1. Briefly discuss any problems/issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
-I have trained my model on a combination of color histogram, spatial and hog features. SVC with a rbf
+I  have used SVC with 'rbf' kernel for classifying each window which is very slow and would not be suitable for a real-time system. The pipeline only processes every 8th frame to make it faster but that also makes the system less responsive to sudden changes in vehicle positions.
 
+One way to improve the project would be to use a dynamic thresholding heatmap. I have used a threshold of 3 which is good for most frames but a dynamic threshold which changes according to the number of windows detected would be a big improvement.
+
+I chose to ignore the left part of the frame which again is very specific to the project video and would need to be removed if I want to use the pipeline for other videos.
